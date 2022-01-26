@@ -1,6 +1,7 @@
 package com.example.quiz;
 import com.example.quiz.database.entities.PlayerEntity;
 import com.example.quiz.database.repositories.PlayerRepository;
+import com.example.quiz.services.QuizDataService;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -14,6 +15,8 @@ public class StartupRunner implements CommandLineRunner {
 
     @Autowired
     private PlayerRepository playerRepository;
+    @Autowired
+    private QuizDataService quizDataService;
 
     @Override
     public void run(String...args) throws Exception {
@@ -21,6 +24,8 @@ public class StartupRunner implements CommandLineRunner {
         playerRepository.save(new PlayerEntity("John"));
         playerRepository.save(new PlayerEntity("Harry"));
         playerRepository.save(new PlayerEntity("George"));
+        quizDataService.getQuizCategories();
+
 
         log.info("List of players from database:");
         List<PlayerEntity> playersFromDatabase = playerRepository.findAll();
