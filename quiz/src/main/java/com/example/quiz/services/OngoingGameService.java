@@ -1,5 +1,6 @@
 package com.example.quiz.services;
 import com.example.quiz.dto.QuestionsDto;
+import com.example.quiz.frontend.Difficulty;
 import com.example.quiz.frontend.GameOptions;
 import lombok.Getter;
 import lombok.extern.java.Log;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Log
@@ -23,6 +25,18 @@ public class OngoingGameService {
     @Autowired
     private QuizDataService quizDataService;
 
+
+    public Difficulty getDifficulty() {
+        return gameOptions.getDifficulty();
+    }
+
+    public String getCategoryName() {
+        Optional<String> category = quizDataService.getQuizCategories().stream()
+                .filter(categoryDto -> categoryDto.getId() == gameOptions.getCategoryId())
+                .map(categoryDto -> categoryDto.getName())
+                .findAny();
+        return category.orElse(null);
+    }
     public void init(GameOptions gameOptions) {
         this.gameOptions = gameOptions;
         this.currentQuestionIndex = 0;
