@@ -11,8 +11,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
 
 @Service
 @Log
@@ -61,4 +64,34 @@ public class QuizDataService {
         log.info("Quiz category question count content: " + result);
         return result;
     }
+
+    static Map<Difficulty, Integer> calculateEachDifficultyQuestionCount(int numberOfQuestions, Difficulty difficulty, CategoryQuestionCountInfoDto categoryQuestionCount) {
+        Map<Difficulty, Integer> eachDifficultyQuestionCount = new EnumMap<>(Difficulty.class);
+        eachDifficultyQuestionCount.put(difficulty, Math.min(numberOfQuestions, categoryQuestionCount.getQuestionCountForDifficulty(difficulty)));
+
+        int missingQuestions = numberOfQuestions - eachDifficultyQuestionCount.values().stream().mapToInt(i -> i).sum();
+        while (missingQuestions > 0) {
+            Difficulty closestDifficulty = Difficulty.calculateNextDifficulty(eachDifficultyQuestionCount.keySet());
+            if (closestDifficulty == null) {
+                log.warning("Not enough question in given category!");
+                break;
+            }
+            eachDifficultyQuestionCount.put(closestDifficulty, Math.min(missingQuestions, categoryQuestionCount.getQuestionCountForDifficulty(closestDifficulty)));
+
+            missingQuestions = numberOfQuestions - eachDifficultyQuestionCount.values().stream().mapToInt(i -> i).sum();
+        }
+
+        if (difficulty == Difficulty.MEDIUM) {
+            Difficulty otherDifficulty = Difficulty.calculateNextDifficulty(eachDifficultyQuestionCount.keySet());
+            if (otherDifficulty != null) {
+                Difficulty filledDifficulty = difficulty.getClosestDifficulty();
+                final int numberToTransfer = Math.min(eachDifficultyQuestionCount.get(filledDifficulty) / 2, categoryQuestionCount.getQuestionCountForDifficulty(otherDifficulty));
+                eachDifficultyQuestionCount.computeIfPresent(filledDifficulty, (d, count) -> count - numberToTransfer);
+                eachDifficultyQuestionCount.put(otherDifficulty, numberToTransfer);
+            }
+        }
+        return eachDifficultyQuestionCount;
+    }
+
+
 }
