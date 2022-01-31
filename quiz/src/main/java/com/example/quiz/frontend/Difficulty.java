@@ -19,6 +19,8 @@ public enum Difficulty {
         }
         return null;
     }
+
+
     public static Difficulty calculateNextDifficulty(Collection<Difficulty> difficulties) {
         if (difficulties == null || difficulties.isEmpty()) {
             return null;
