@@ -11,10 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 
 @Service
@@ -34,11 +31,22 @@ public class QuizDataService {
         if (availableQuestionCount >= gameOptions.getNumberOfQuestions()) {
             return getQuizQuestions(gameOptions.getNumberOfQuestions(), gameOptions.getCategoryId(), gameOptions.getDifficulty());
         } else {
-            return getQuizQuestions(availableQuestionCount, gameOptions.getCategoryId(), gameOptions.getDifficulty());
+            List<QuestionsDto.QuestionDto> questions = new ArrayList<>();
+            Map<Difficulty, Integer> eachDifficultyQuestionCount = calculateEachDifficultyQuestionCount(gameOptions.getNumberOfQuestions(), gameOptions.getDifficulty(), categoryQuestionCount);
+            for (Map.Entry<Difficulty, Integer> entry : eachDifficultyQuestionCount.entrySet()) {
+                List<QuestionsDto.QuestionDto> originalDifficultyQuestions = getQuizQuestions(entry.getValue(), gameOptions.getCategoryId(), entry.getKey());
+                questions.addAll(originalDifficultyQuestions);
+            }
+            Collections.shuffle(questions);
+            return questions;
         }
     }
 
     private List<QuestionsDto.QuestionDto> getQuizQuestions(int numberOfQuestions, int categoryId, Difficulty difficulty) {
+       if (numberOfQuestions <= 0){
+           return Collections.emptyList();
+       }
+
         RestTemplate restTemplate = new RestTemplate();
 
         URI uri = UriComponentsBuilder.fromHttpUrl("https://opentdb.com/api.php")

@@ -1,6 +1,6 @@
 #FileLock
-#Mon Jan 31 17:09:50 EET 2022
-server=localhost\:62648
-hostName=localhost
+#Sat Feb 12 14:18:36 EET 2022
+server=192.168.1.69\:62818
+hostName=annelys-air.lan
 method=file
-id=17eb0af5ea35ab94c63363278fd8561c07001addc77
+id=17eeddeec6fabd9cd50e202f5f8266825058cfe6ca8
